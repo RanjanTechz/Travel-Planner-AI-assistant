@@ -1,0 +1,6 @@
+{
+  "name": "AI Itinerary Planner",
+  "description": "An elite AI Travel Assistant and Expert Itinerary Planner that designs highly personalized, realistic, and engaging day-by-day travel schedules.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
