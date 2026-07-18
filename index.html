@@ -3,11 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
+    <meta name="description" content="Valise — AI-powered travel planner that creates personalized, day-by-day itineraries with budget estimates, cultural tips, and hidden local gems." />
+    <!-- CSP: restrict resource origins; adjust if you add external CDNs -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self';"
+    />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <title>Valise — AI Travel Planner</title>
   </head>
   <body>
+    <!-- Skip link: lets keyboard users jump past the nav directly to content -->
+    <a
+      href="#main-content"
+      style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;"
+      onfocus="this.style.cssText='position:fixed;top:1rem;left:1rem;z-index:9999;padding:0.5rem 1rem;background:#4f46e5;color:#fff;font-weight:700;border-radius:0.5rem;font-size:0.875rem;box-shadow:0 4px 12px rgba(0,0,0,0.4);outline:3px solid #fff;'"
+      onblur="this.style.cssText='position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;'"
+    >
+      Skip to main content
+    </a>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

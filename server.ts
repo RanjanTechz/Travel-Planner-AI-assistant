@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import path from "path";
 import dotenv from "dotenv";
 import { GoogleGenAI, Type } from "@google/genai";
@@ -6,13 +6,46 @@ import { GoogleGenAI, Type } from "@google/genai";
 dotenv.config();
 
 const app = express();
-app.use(express.json({ limit: "5mb" }));
+
+// ── Security: cap request body size to 50 KB (prevents large payload abuse) ──
+app.use(express.json({ limit: "50kb" }));
+
+// ── Security: add basic security response headers ─────────────────────────
+app.use((_req: Request, res: Response, next: NextFunction) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  next();
+});
 
 const PORT = 3000;
+
+/** Maximum allowed lengths for user-supplied strings (security: prevent abuse) */
+const MAX_DESTINATION_LEN = 120;
+const MAX_VIBE_LEN = 1200;
+const MAX_INTERESTS = 10;
+const MAX_INTEREST_LEN = 60;
+
+/**
+ * Sanitise a string: trim whitespace and strip control characters.
+ * Returns an empty string if the input is not a string.
+ */
+function sanitiseString(value: unknown, maxLen: number): string {
+  if (typeof value !== "string") return "";
+  // Remove ASCII control characters (except normal whitespace)
+  return value.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "").trim().slice(0, maxLen);
+}
 
 // Lazy initialize Gemini client to prevent startup crash if key is missing
 let aiClient: GoogleGenAI | null = null;
 
+/**
+ * Returns the shared GoogleGenAI client, creating it on first call.
+ * Throws if GEMINI_API_KEY is not set in the environment.
+ * Using lazy initialisation ensures the server can start and serve non-AI
+ * routes even before the key is validated.
+ */
 function getAiClient(): GoogleGenAI {
   if (!aiClient) {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -32,18 +65,29 @@ function getAiClient(): GoogleGenAI {
 }
 
 // API endpoint to generate itineraries
-app.post("/api/generate-itinerary", async (req, res) => {
+app.post("/api/generate-itinerary", async (req: Request, res: Response) => {
   try {
-    const {
-      destination,
-      vibe,
-      duration,
-      budgetLevel,
-      travelParty,
-      interests = [],
-    } = req.body;
+    // ── Input validation & sanitisation ────────────────────────────────────
+    const destination  = sanitiseString(req.body.destination,  MAX_DESTINATION_LEN);
+    const vibe         = sanitiseString(req.body.vibe,         MAX_VIBE_LEN);
+    const budgetLevel  = sanitiseString(req.body.budgetLevel,  40);
+    const travelParty  = sanitiseString(req.body.travelParty,  40);
 
-    if (!vibe || !duration || !budgetLevel || !travelParty) {
+    const rawDuration = req.body.duration;
+    const duration = typeof rawDuration === "number" && Number.isFinite(rawDuration)
+      ? Math.max(1, Math.min(14, Math.round(rawDuration)))
+      : NaN;
+
+    const rawInterests: unknown = req.body.interests ?? [];
+    const interests: string[] = Array.isArray(rawInterests)
+      ? rawInterests
+          .slice(0, MAX_INTERESTS)
+          .map((i) => sanitiseString(i, MAX_INTEREST_LEN))
+          .filter(Boolean)
+      : [];
+
+    // Validate required fields after sanitisation
+    if (!vibe || !budgetLevel || !travelParty || isNaN(duration)) {
       res.status(400).json({ error: "Missing required fields." });
       return;
     }
