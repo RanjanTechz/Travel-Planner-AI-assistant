@@ -10,14 +10,18 @@ interface NavbarProps {
 export default function Navbar({ onNewItinerary, onViewHistory, savedCount, currentTab }: NavbarProps) {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-[#05070A]/85 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Brand logo */}
-        <div 
-          onClick={onNewItinerary} 
-          className="flex cursor-pointer items-center gap-2.5 transition-opacity hover:opacity-95"
+      <nav
+        className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8"
+        aria-label="Main navigation"
+      >
+        {/* Brand logo — must be a button so keyboard users can activate it */}
+        <button
+          onClick={onNewItinerary}
+          className="flex cursor-pointer items-center gap-2.5 transition-opacity hover:opacity-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#05070A] rounded-lg"
           id="navbar-logo"
+          aria-label="Valise — go to planner"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-[0_0_15px_rgba(99,102,241,0.4)]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-[0_0_15px_rgba(99,102,241,0.4)]" aria-hidden="true">
             <Compass className="h-5 w-5 animate-spin-[spin_12s_linear_infinite]" />
           </div>
           <div>
@@ -28,42 +32,51 @@ export default function Navbar({ onNewItinerary, onViewHistory, savedCount, curr
               AI Travel
             </span>
           </div>
-        </div>
+        </button>
 
         {/* Dynamic Controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3" role="tablist" aria-label="App sections">
           <button
+            role="tab"
             onClick={onNewItinerary}
-            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 font-sans text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
+            aria-selected={currentTab === "plan"}
+            aria-current={currentTab === "plan" ? "page" : undefined}
+            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 font-sans text-xs font-bold uppercase tracking-wider transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#05070A] ${
               currentTab === "plan"
                 ? "bg-indigo-600 text-white shadow-[0_0_12px_rgba(99,102,241,0.3)]"
                 : "text-slate-400 hover:bg-white/5 hover:text-white"
             }`}
             id="nav-btn-plan"
           >
-            <Sparkles className="h-4 w-4" />
+            <Sparkles className="h-4 w-4" aria-hidden="true" />
             <span>Plan Itinerary</span>
           </button>
 
           <button
+            role="tab"
             onClick={onViewHistory}
-            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 font-sans text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
+            aria-selected={currentTab === "history"}
+            aria-current={currentTab === "history" ? "page" : undefined}
+            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 font-sans text-xs font-bold uppercase tracking-wider transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#05070A] ${
               currentTab === "history"
                 ? "bg-indigo-600 text-white shadow-[0_0_12px_rgba(99,102,241,0.3)]"
                 : "text-slate-400 hover:bg-white/5 hover:text-white"
             }`}
             id="nav-btn-history"
           >
-            <Globe className="h-4 w-4" />
+            <Globe className="h-4 w-4" aria-hidden="true" />
             <span>My Trips</span>
             {savedCount > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-500 px-1 font-mono text-[10px] font-black text-white">
-                {savedCount}
+              <span
+                className="flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-500 px-1 font-mono text-[10px] font-black text-white"
+                aria-label={`${savedCount} saved trip${savedCount !== 1 ? "s" : ""}`}
+              >
+                <span aria-hidden="true">{savedCount}</span>
               </span>
             )}
           </button>
         </div>
-      </div>
+      </nav>
     </header>
   );
 }
